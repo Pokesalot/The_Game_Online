@@ -22,16 +22,27 @@
             <br>You can however make them go the wrong way but only by exactly ten at a time! That is, if the top pile has a 63, you can play any card 64 or higher, or 53. 
             <br>Get as far as you can. you will unlock more difficult versions as you play which will make things harder at random!
             <br>Your score will go up for playing more cards before you end your turn, as well as 5 points every time you reverse!
-            <br> So zany! GLHF</p>
-        <h3 id="difficultyHeader" style="font-size: 29;"></h3>
-        <h4 id="difficultyRollsHeader"></h4>
+            <br> So zany! GLHF!
+            <br>Coding by <a href="https://github.com/Pokesalot">Pokesalot</a>, art by <a href="https://www.twitch.tv/syntheticbears">SyntheticBears</a> :P</p>
+            
+        <table>
+            <tr>
+                <h3 id="difficultyHeader" style="display: inline;"></h3>
+                <h4 id="difficultyRollsHeader" style="display: inline;"></h4>
+            </tr>
+        </table>
+        
+        
+        
         
         <div id="DeckDiv">
             <h2 id="CardsRemaining">Cards in deck: 90</h2>
             <h2 id="playsLeftHeader">Cards to play: 2</h2>
         </div>
         <br><br>
-        <h4 id="ScoreBar" style="float: right;width: 50%;">Score: 0</h4>
+        
+        <h2 id="ScoreBar" style="float: right;width: 50%;">Score: 0</h2>
+        
         <div id="TableDiv">
             <table>
                 <tr>
@@ -46,12 +57,16 @@
                     <td>_\/_</td>
                 </tr>
             </table>
+            
         </div>
+        
         <br><br>
+        
         <div id="HandDiv">
             <table><tr id="HandRow"></tr></table>
         </div>
 
+        <h3 id="UndoButton" hidden onclick="UndoMove()">&ltUndo&gt</h3>
         <h3 id="EndTurnButton" hidden onclick="EndTurn()">&ltEnd Turn&gt</h3>
 
 

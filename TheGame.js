@@ -15,11 +15,11 @@ let selectionColor = "lime";
 let difficulties = [1]
 let currentDifficulty = difficulties[0]
 let difshow = $("difficultyHeader")
-difshow.innerText = `This game's difficulty: ${currentDifficulty}`
+difshow.innerText = `Current difficulty: ${currentDifficulty}`
 //Create deck and shuffle it by adding cards to it randomly
 let deck = [2];//Skip adding 2 'randomly' since it will be the only card
 for(let i = 3; i <= 99; i++){
-    deck.splice(Math.floor(Math.random() * deck.length + 1),0,i);
+    deck.splice(Math.floor(Math.random() * (deck.length + 1)),0,i);
 }
 //Create piles
 let piles = {};
@@ -35,6 +35,8 @@ let selected = 0;
 let MinPlaysWithDeck = 2;
 let PlayedThisTurn = 0;
 let score = 0;
+let lastPlay = {"Put":0,"Pile":0,"Last":0};
+let undos = 0;
 
 PopulatePiles()
 PopulateHand()
@@ -48,7 +50,7 @@ function PopulateHand(){
     }
     hand.sort(function(a, b) {
         return a - b;
-      })
+    })
     //display cards in hand
     let handrow = $("HandRow");
     let handHTML = ""
@@ -94,21 +96,25 @@ function TryPlay(pileNumber){
     let endturn = $("EndTurnButton");
     if(pileNumber < 2){ //Ascending numbers
         if(selected > piles[pileNumber] || selected == piles[pileNumber] - 10){
+            lastPlay = {"Put":selected,"Pile":pileNumber,"Last":piles[pileNumber]};
             if(selected == piles[pileNumber] - 10){score+=5}
             piles[pileNumber] = selected
             hand = hand.filter(card => card != selected)
             score += [1,1,2,4,6,8,10,12][PlayedThisTurn]
             PlayedThisTurn++;
+            $("UndoButton").hidden = false;
         }else{
             alert("do you are have stupid");
         }
     }else{ //Descending numbers
         if(selected < piles[pileNumber] || selected == piles[pileNumber] + 10){
+            lastPlay = {"Put":selected,"Pile":pileNumber,"Last":piles[pileNumber]};
             if(selected == piles[pileNumber] + 10){score+=5}
             piles[pileNumber] = selected
             hand = hand.filter(card => card != selected)
             score += [1,1,2,4,6,8,10,12][PlayedThisTurn]
             PlayedThisTurn++;
+            $("UndoButton").hidden = false;
         }else{
             alert("do you are have stupid");
         }
@@ -134,8 +140,7 @@ function TryPlay(pileNumber){
     }else{
         plh.innerText = `Cards to play: ${hand.length}`
     }
-    let scorebar = $("ScoreBar")
-    scorebar.innerText = `Score: ${score}`
+    $("ScoreBar").innerText = `Score: ${score}`
 
     selected = 0
     PopulatePiles();
@@ -144,10 +149,8 @@ function TryPlay(pileNumber){
 }
 
 function NewGame(){
-    let difsel = $("NewGameSelector");
-    currentDifficulty = difficulties[difsel.selectedIndex];
-    let difshow = $("difficultyHeader")
-    difshow.innerText = `This game's difficulty: ${currentDifficulty}`
+    currentDifficulty = difficulties[$("NewGameSelector").selectedIndex];
+    $("difficultyHeader").innerText = `Current difficulty: ${currentDifficulty}`
     //Create deck and shuffle it by adding cards to it randomly
     
     piles[0] = 1;
@@ -192,19 +195,18 @@ function NewGame(){
 
     deck = [2];//Skip adding 2 'randomly' since it will be the only card
     for(let i = 3; i <= 99; i++){
+        if(hand.indexOf(i) > -1){continue;}
         deck.splice(Math.floor(Math.random() * deck.length + 1),0,i);
     }
 
     selected = 0;
     PlayedThisTurn = 0;
-    let plh = $("playsLeftHeader");
-    plh.innerText = `Cards to play: ${MinPlaysWithDeck}`
-    let endturn = $("EndTurnButton");
-    endturn.hidden = true;
-    let charlie = $("NoMoves");
-    charlie.hidden=true;
-    let scorebar = $("ScoreBar")
-    scorebar.innerText = "Score: 0"
+    lastPlay = {"Put":0,"Pile":0,"Last":0};
+    undos = 0;
+    $("playsLeftHeader").innerText = `Cards to play: ${MinPlaysWithDeck}`
+    $("EndTurnButton").hidden = true;
+    $("NoMoves").hidden=true;
+    $("ScoreBar").innerText = "Score: 0"
 
     PopulatePiles()
     PopulateHand()
@@ -221,25 +223,38 @@ function EndTurn(){
     }else{
         plh.innerText = `Cards to play: ${hand.length}`
     }
+    $("UndoButton").hidden = true;
     CheckForDeadBoard();
 }
 
 function PopulateDifficulties(){
-    let difsel = $("NewGameSelector");
     let options = "";
     for(let i=0;i<difficulties.length;i++){
         options += `<option>Level ${i + 1}</option>`;
     }
-    difsel.innerHTML = options;
+    $("NewGameSelector").innerHTML = options;
 }
 
 function CheckForDeadBoard(){
     if(hand.length >= 1){
         let endturn = $("EndTurnButton");
         if(hand[0] > piles[2] && hand[0] > piles[3] && hand[hand.length-1]<piles[0] && hand[hand.length-1]<piles[1] && endturn.hidden){//No possible moves and we can't end turn
-            alert("Your game has no more moves, let's start a new one!");
             let charlie = $("NoMoves");
             charlie.hidden=false;
+            setTimeout(() => {  alert("Your game has no more moves, let's start a new one!");NewGame() }, 500);
         }
     }
+}
+
+function UndoMove(){
+    PlayedThisTurn--;
+    alert(`Oopsy woopsy. Wooks wike someone had a wittle fucko boingo. A wittle fucky wucky. Twy to do bettew maybe? >.< \nRemoved ${undos} point${undos!=1?"s":""}`)
+    hand.push(lastPlay["Put"]);
+    hand.sort(function(a, b) {
+        return a - b;
+    })
+    piles[lastPlay["Pile"]] = lastPlay["Last"]
+    PopulateHand();
+    PopulatePiles();
+    $("UndoButton").hidden = true;
 }
