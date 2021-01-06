@@ -224,10 +224,10 @@ function NewGame(){
 }
 
 function EndTurn(){
+    if($("EndTurnButton").hidden){return}
     PlayedThisTurn = 0;
     PopulateHand();
-    let endturn = $("EndTurnButton");
-    endturn.hidden = true;
+    $("EndTurnButton").hidden = true;
     let plh = $("playsLeftHeader");
     if(deck.length>0){
         plh.innerText = `Cards to play: ${Math.max(MinPlaysWithDeck-PlayedThisTurn,0)}`
@@ -258,6 +258,7 @@ function CheckForDeadBoard(){
 }
 
 function UndoMove(){
+    if($("UndoButton").hidden){return}
     score -= [1,1,2,4,6,8,10,12][PlayedThisTurn]
     PlayedThisTurn--; cardsPlayed--;
     alert(`Oopsy woopsy. Wooks wike someone had a wittle fucko boingo. A wittle fucky wucky. Twy to do bettew maybe? >.< \nRemoved ${undos} point${undos!=1?"s":""}`)
