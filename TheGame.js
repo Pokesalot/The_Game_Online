@@ -11,10 +11,11 @@
         - 0 and 1 are ascending
         - 2 and 3 are descending
 */
+let selectionColor = "lime";
 let difficulties = [1]
 let currentDifficulty = difficulties[0]
-    let difshow = $("difficultyHeader")
-    difshow.innerText = `This game's difficulty: ${currentDifficulty}`
+let difshow = $("difficultyHeader")
+difshow.innerText = `This game's difficulty: ${currentDifficulty}`
 //Create deck and shuffle it by adding cards to it randomly
 let deck = [2];//Skip adding 2 'randomly' since it will be the only card
 for(let i = 3; i <= 99; i++){
@@ -32,7 +33,6 @@ let minHandSize = 5;
 let hand = []
 let selected = null;
 let MinPlaysWithDeck = 2;
-let MinPlaysWithoutDeck = 1;
 let PlayedThisTurn = 0;
 
 PopulatePiles()
@@ -58,7 +58,7 @@ function PopulateHand(){
             `
         }else{
             handHTML += `
-                <td style="background-color: darkblue;" onclick="SelectFromHand(${hand[i]})">${hand[i]}</td>
+                <td style="background-color: ${selectionColor};" onclick="SelectFromHand(${hand[i]})">${hand[i]}</td>
             `
         }
     }
@@ -89,6 +89,7 @@ function SelectFromHand(newSelect){
 }
 
 function TryPlay(pileNumber){
+    let endturn = $("EndTurnButton");
     if(pileNumber < 2){ //Ascending numbers
         if(selected > piles[pileNumber] || selected == piles[pileNumber] - 10){
             piles[pileNumber] = selected
@@ -107,23 +108,23 @@ function TryPlay(pileNumber){
         }
     }
 
-    if(hand.length == 0 || ((PlayedThisTurn >= MinPlaysWithDeck || (deck.length == 0 && PlayedThisTurn >= MinPlaysWithoutDeck)) && deck.length > 0)){
-        let endturn = $("EndTurnButton");
-        endturn.hidden = false;
-    }
+    endturn.hidden = true;
     if(hand.length == 0 && deck.length == 0){
-        if(currentDifficulty == Math.max(difficulties)){
-            difficulties += difficulties.length + 1;
+        if(currentDifficulty == difficulties.length){
+            difficulties.push(difficulties.length + 1);
             alert("You won! You have also unlocked a harder difficulty to try your skills!");
+            PopulateDifficulties();
         }else{
             alert("You won! Try a harder one next time :^)");
         }
 
+    }else if(hand.length == 0 || PlayedThisTurn > MinPlaysWithDeck){
+        endturn.hidden = false;
     }
     
     let plh = $("playsLeftHeader");
     if(deck.length>0){
-        plh.innerText = `Cards to play: ${MinPlaysWithDeck-PlayedThisTurn}`
+        plh.innerText = `Cards to play: ${Math.max(MinPlaysWithDeck-PlayedThisTurn,0)}`
     }else{
         plh.innerText = `Cards to play: ${hand.length}`
     }
@@ -148,7 +149,6 @@ function NewGame(){
     maxHandSize = 8;
     hand = [];
     MinPlaysWithDeck = 2;
-    MinPlaysWithoutDeck = 1;
     
     let drh = $("difficultyRollsHeader");
     let changes = "|";
@@ -156,13 +156,13 @@ function NewGame(){
     while(difficultyChanges > 0){
         changeRoll = Math.random()
         if(      changeRoll < 0.2){
-            piles[0] += Math.floor(Math.random() * 5);
+            piles[0] += Math.ceil(Math.random() * 5);
         }else if(changeRoll < 0.4){
-            piles[1] += Math.floor(Math.random() * 5);
+            piles[1] += Math.ceil(Math.random() * 5);
         }else if(changeRoll < 0.6){
-            piles[2] -= Math.floor(Math.random() * 5);
+            piles[2] -= Math.ceil(Math.random() * 5);
         }else if(changeRoll < 0.8){
-            piles[3] -= Math.floor(Math.random() * 5);
+            piles[3] -= Math.ceil(Math.random() * 5);
         }else if(changeRoll < 0.85){
             if(maxHandSize == minHandSize){continue}
             maxHandSize--;
@@ -174,7 +174,6 @@ function NewGame(){
             }
         }else{
             MinPlaysWithDeck++;
-            MinPlaysWithoutDeck++;
         }
         difficultyChanges--;
         changes += `${parseFloat(changeRoll).toFixed(2)}|`
