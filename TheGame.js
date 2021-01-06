@@ -28,6 +28,7 @@ piles[2] = 100;
 piles[3] = 100;
 //Create hand
 let maxHandSize = 8;
+let minHandSize = 5;
 let hand = []
 let selected = null;
 let MinPlaysWithDeck = 2;
@@ -93,16 +94,20 @@ function TryPlay(pileNumber){
             piles[pileNumber] = selected
             hand = hand.filter(card => card != selected)
             PlayedThisTurn++;
+        }else{
+            alert("do you are have stupid");
         }
     }else{ //Descending numbers
         if(selected < piles[pileNumber] || selected == piles[pileNumber] + 10){
             piles[pileNumber] = selected
             hand = hand.filter(card => card != selected)
             PlayedThisTurn++;
+        }else{
+            alert("do you are have stupid");
         }
     }
 
-    if((PlayedThisTurn >= MinPlaysWithDeck || (deck.length == 0 && PlayedThisTurn >= MinPlaysWithoutDeck)) && deck.length > 0){
+    if(hand.length == 0 || ((PlayedThisTurn >= MinPlaysWithDeck || (deck.length == 0 && PlayedThisTurn >= MinPlaysWithoutDeck)) && deck.length > 0)){
         let endturn = $("EndTurnButton");
         endturn.hidden = false;
     }
@@ -116,6 +121,12 @@ function TryPlay(pileNumber){
 
     }
     
+    let plh = $("playsLeftHeader");
+    if(deck.length>0){
+        plh.innerText = `Cards to play: ${MinPlaysWithDeck-PlayedThisTurn}`
+    }else{
+        plh.innerText = `Cards to play: ${hand.length}`
+    }
 
     selected = 0
     PopulatePiles();
@@ -139,6 +150,8 @@ function NewGame(){
     MinPlaysWithDeck = 2;
     MinPlaysWithoutDeck = 1;
     
+    let drh = $("difficultyRollsHeader");
+    let changes = "|";
     difficultyChanges = currentDifficulty - 1
     while(difficultyChanges > 0){
         changeRoll = Math.random()
@@ -151,12 +164,21 @@ function NewGame(){
         }else if(changeRoll < 0.8){
             piles[3] -= Math.floor(Math.random() * 5);
         }else if(changeRoll < 0.85){
-            
+            if(maxHandSize == minHandSize){continue}
+            maxHandSize--;
+        }else if(changeRoll < 0.9){
+            if(hand.length == 0){
+                hand = [52]
+            }else{
+                hand.push(hand[hand.length-1] - 1)
+            }
         }else{
             MinPlaysWithDeck++;
             MinPlaysWithoutDeck++;
         }
         difficultyChanges--;
+        changes += `${parseFloat(changeRoll).toFixed(2)}|`
+        drh.innerText = `Changes this game: ${changes}`
     }
 
     deck = [2];//Skip adding 2 'randomly' since it will be the only card
@@ -166,6 +188,8 @@ function NewGame(){
 
     selected = null;
     PlayedThisTurn = 0;
+    let plh = $("playsLeftHeader");
+    plh.innerText = `Cards to play: ${MinPlaysWithDeck}`
     let endturn = $("EndTurnButton");
     endturn.hidden = true;
 
