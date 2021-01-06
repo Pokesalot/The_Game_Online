@@ -34,6 +34,7 @@ let hand = []
 let selected = 0;
 let MinPlaysWithDeck = 2;
 let PlayedThisTurn = 0;
+let score = 0;
 
 PopulatePiles()
 PopulateHand()
@@ -93,16 +94,20 @@ function TryPlay(pileNumber){
     let endturn = $("EndTurnButton");
     if(pileNumber < 2){ //Ascending numbers
         if(selected > piles[pileNumber] || selected == piles[pileNumber] - 10){
+            if(selected == piles[pileNumber] - 10){score+=5}
             piles[pileNumber] = selected
             hand = hand.filter(card => card != selected)
+            score += [1,1,2,4,6,8,10,12][PlayedThisTurn]
             PlayedThisTurn++;
         }else{
             alert("do you are have stupid");
         }
     }else{ //Descending numbers
         if(selected < piles[pileNumber] || selected == piles[pileNumber] + 10){
+            if(selected == piles[pileNumber] + 10){score+=5}
             piles[pileNumber] = selected
             hand = hand.filter(card => card != selected)
+            score += [1,1,2,4,6,8,10,12][PlayedThisTurn]
             PlayedThisTurn++;
         }else{
             alert("do you are have stupid");
@@ -129,6 +134,8 @@ function TryPlay(pileNumber){
     }else{
         plh.innerText = `Cards to play: ${hand.length}`
     }
+    let scorebar = $("ScoreBar")
+    scorebar.innerText = `Score: ${score}`
 
     selected = 0
     PopulatePiles();
@@ -151,6 +158,7 @@ function NewGame(){
     maxHandSize = 8;
     hand = [];
     MinPlaysWithDeck = 2;
+    score = 0;
     
     let drh = $("difficultyRollsHeader");
     let changes = "|";
@@ -195,6 +203,8 @@ function NewGame(){
     endturn.hidden = true;
     let charlie = $("NoMoves");
     charlie.hidden=true;
+    let scorebar = $("ScoreBar")
+    scorebar.innerText = "Score: 0"
 
     PopulatePiles()
     PopulateHand()
