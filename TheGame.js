@@ -31,7 +31,7 @@ piles[3] = 100;
 let maxHandSize = 8;
 let minHandSize = 5;
 let hand = []
-let selected = null;
+let selected = 0;
 let MinPlaysWithDeck = 2;
 let PlayedThisTurn = 0;
 
@@ -89,6 +89,7 @@ function SelectFromHand(newSelect){
 }
 
 function TryPlay(pileNumber){
+    if(selected==0){return;}
     let endturn = $("EndTurnButton");
     if(pileNumber < 2){ //Ascending numbers
         if(selected > piles[pileNumber] || selected == piles[pileNumber] - 10){
@@ -118,7 +119,7 @@ function TryPlay(pileNumber){
             alert("You won! Try a harder one next time :^)");
         }
 
-    }else if(hand.length == 0 || PlayedThisTurn > MinPlaysWithDeck){
+    }else if(hand.length == 0 || PlayedThisTurn >= MinPlaysWithDeck){
         endturn.hidden = false;
     }
     
@@ -132,6 +133,7 @@ function TryPlay(pileNumber){
     selected = 0
     PopulatePiles();
     PopulateHand();
+    CheckForDeadBoard();
 }
 
 function NewGame(){
@@ -185,7 +187,7 @@ function NewGame(){
         deck.splice(Math.floor(Math.random() * deck.length + 1),0,i);
     }
 
-    selected = null;
+    selected = 0;
     PlayedThisTurn = 0;
     let plh = $("playsLeftHeader");
     plh.innerText = `Cards to play: ${MinPlaysWithDeck}`
@@ -201,6 +203,13 @@ function EndTurn(){
     PopulateHand();
     let endturn = $("EndTurnButton");
     endturn.hidden = true;
+    let plh = $("playsLeftHeader");
+    if(deck.length>0){
+        plh.innerText = `Cards to play: ${Math.max(MinPlaysWithDeck-PlayedThisTurn,0)}`
+    }else{
+        plh.innerText = `Cards to play: ${hand.length}`
+    }
+    CheckForDeadBoard();
 }
 
 function PopulateDifficulties(){
@@ -210,4 +219,14 @@ function PopulateDifficulties(){
         options += `<option>Level ${i + 1}</option>`;
     }
     difsel.innerHTML = options;
+}
+
+function CheckForDeadBoard(){
+    if(hand.length >= 1){
+        let endturn = $("EndTurnButton");
+        if(hand[0] > piles[2] && hand[0] > piles[3] && hand[hand.length-1]<piles[0] && hand[hand.length-1]<piles[1] && endturn.hidden){//No possible moves and we can't end turn
+            alert("Your game has no more moves, let's start a new one!");
+            NewGame();
+        }
+    }
 }
