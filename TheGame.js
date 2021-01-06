@@ -12,6 +12,8 @@
         - 2 and 3 are descending
 */
 let selectionColor = "lime";
+let maxHiscores = 10;
+let hiscores = []
 let difficulties = [1]
 let currentDifficulty = difficulties[0]
 let difshow = $("difficultyHeader")
@@ -37,6 +39,7 @@ let PlayedThisTurn = 0;
 let score = 0;
 let lastPlay = {"Put":0,"Pile":0,"Last":0};
 let undos = 0;
+let cardsPlayed = 0;
 
 PopulatePiles()
 PopulateHand()
@@ -101,7 +104,7 @@ function TryPlay(pileNumber){
             piles[pileNumber] = selected
             hand = hand.filter(card => card != selected)
             score += [1,1,2,4,6,8,10,12][PlayedThisTurn]
-            PlayedThisTurn++;
+            PlayedThisTurn++; cardsPlayed++;
             $("UndoButton").hidden = false;
         }else{
             alert("do you are have stupid");
@@ -113,7 +116,7 @@ function TryPlay(pileNumber){
             piles[pileNumber] = selected
             hand = hand.filter(card => card != selected)
             score += [1,1,2,4,6,8,10,12][PlayedThisTurn]
-            PlayedThisTurn++;
+            PlayedThisTurn++; cardsPlayed++;
             $("UndoButton").hidden = false;
         }else{
             alert("do you are have stupid");
@@ -149,6 +152,12 @@ function TryPlay(pileNumber){
 }
 
 function NewGame(){
+    hiscores.push(`${score},${cardsPlayed},${undos},${currentDifficulty}`);
+    hiscores.sort(function(a, b) {return b.split(',')[0] - a.split(',')[0];}).splice(maxHiscores,100);//Make sure we have exactly the top ten hiscores
+    $("hiscores").innerHTML = ""
+    for(let i=0;i<hiscores.length;i++){
+        $("hiscores").innerHTML += `<li>Score:${hiscores[i].split(',')[0]}, Cards: ${hiscores[i].split(',')[1]}, Undos: ${hiscores[i].split(',')[2]}, Level: ${hiscores[i].split(',')[3]}</li>`
+    }
     currentDifficulty = difficulties[$("NewGameSelector").selectedIndex];
     $("difficultyHeader").innerText = `Current difficulty: ${currentDifficulty}`
     //Create deck and shuffle it by adding cards to it randomly
@@ -161,7 +170,7 @@ function NewGame(){
     maxHandSize = 8;
     hand = [];
     MinPlaysWithDeck = 2;
-    score = 0;
+    
     
     let drh = $("difficultyRollsHeader");
     let changes = "|";
@@ -203,6 +212,8 @@ function NewGame(){
     PlayedThisTurn = 0;
     lastPlay = {"Put":0,"Pile":0,"Last":0};
     undos = 0;
+    score = 0;
+    cardsPlayed = 0;
     $("playsLeftHeader").innerText = `Cards to play: ${MinPlaysWithDeck}`
     $("EndTurnButton").hidden = true;
     $("NoMoves").hidden=true;
@@ -247,7 +258,7 @@ function CheckForDeadBoard(){
 }
 
 function UndoMove(){
-    PlayedThisTurn--;
+    PlayedThisTurn--; cardsPlayed--;
     alert(`Oopsy woopsy. Wooks wike someone had a wittle fucko boingo. A wittle fucky wucky. Twy to do bettew maybe? >.< \nRemoved ${undos} point${undos!=1?"s":""}`)
     hand.push(lastPlay["Put"]);
     hand.sort(function(a, b) {
