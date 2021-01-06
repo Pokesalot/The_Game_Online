@@ -258,6 +258,7 @@ function CheckForDeadBoard(){
 }
 
 function UndoMove(){
+    score -= [1,1,2,4,6,8,10,12][PlayedThisTurn]
     PlayedThisTurn--; cardsPlayed--;
     alert(`Oopsy woopsy. Wooks wike someone had a wittle fucko boingo. A wittle fucky wucky. Twy to do bettew maybe? >.< \nRemoved ${undos} point${undos!=1?"s":""}`)
     hand.push(lastPlay["Put"]);
@@ -268,4 +269,5 @@ function UndoMove(){
     PopulateHand();
     PopulatePiles();
     $("UndoButton").hidden = true;
+    $("ScoreBar").innerText = `Score: ${score}`
 }
