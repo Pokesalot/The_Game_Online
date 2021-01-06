@@ -17,6 +17,7 @@
     <body style="background-color: whitesmoke;">
         <select id="NewGameSelector"></select>
         <button type="button" onclick="NewGame()">Start a new game!</button>
+        <p style="width: 50%; float: right;">Welcome to <strong>The Game!</strong> where you will play cards (below) into piles. The top two piles only go up, and the bottom piles only go down! You can however make them go the wrong way but only by exactly ten at a time! That is, if the top pile has a 63, you can play any card 64 or higher, or 53. Get as far as you can, you will unlock more difficult versions as you play which will make things harder at random! So zany! GLHF</p>
         <h3 id="difficultyHeader" style="font-size: 29;"></h3>
         <h4 id="difficultyRollsHeader"></h4>
         
@@ -41,12 +42,14 @@
             </table>
         </div>
         <br><br>
-        <div id="HandDiv" >
+        <div id="HandDiv">
             <table><tr id="HandRow"></tr></table>
         </div>
 
         <h3 id="EndTurnButton" hidden onclick="EndTurn()">&ltEnd Turn&gt</h3>
 
+
+        <img id="NoMoves" src="whatdo.jpg" hidden>
         <script src="TheGame.js"></script>
     </body>
 

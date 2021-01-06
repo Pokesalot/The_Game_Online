@@ -193,6 +193,8 @@ function NewGame(){
     plh.innerText = `Cards to play: ${MinPlaysWithDeck}`
     let endturn = $("EndTurnButton");
     endturn.hidden = true;
+    let charlie = $("NoMoves");
+    charlie.hidden=true;
 
     PopulatePiles()
     PopulateHand()
@@ -226,7 +228,8 @@ function CheckForDeadBoard(){
         let endturn = $("EndTurnButton");
         if(hand[0] > piles[2] && hand[0] > piles[3] && hand[hand.length-1]<piles[0] && hand[hand.length-1]<piles[1] && endturn.hidden){//No possible moves and we can't end turn
             alert("Your game has no more moves, let's start a new one!");
-            NewGame();
+            let charlie = $("NoMoves");
+            charlie.hidden=false;
         }
     }
 }
