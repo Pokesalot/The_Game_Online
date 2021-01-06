@@ -133,7 +133,7 @@ function TryPlay(pileNumber){
             alert("You won! Try a harder one next time :^)");
         }
 
-    }else if(hand.length == 0 || PlayedThisTurn >= MinPlaysWithDeck){
+    }else if((hand.length == 0 || PlayedThisTurn >= MinPlaysWithDeck) && deck.length > 0){
         endturn.hidden = false;
     }
     
