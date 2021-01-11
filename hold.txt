@@ -1,0 +1,12 @@
+<style>
+            td {
+                width: 80px;
+                overflow: hidden;
+                display: inline-block;
+                white-space: nowrap;
+                border: 1px solid black;
+                font-size: 50;
+                padding:0;
+            }
+
+        </style>

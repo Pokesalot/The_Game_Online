@@ -2,80 +2,105 @@
     <head>
         <title>This is a Game!</title>
         <style>
-            td {
-                width: 80px;
+            td.middle {
+                width: 3.75vw;
                 overflow: hidden;
                 display: inline-block;
                 white-space: nowrap;
                 border: 1px solid black;
-                font-size: 50;
+                font-size: 3vh;
+                font-family: 'Courier New', Courier, monospace;
+                font-weight: bold;
+                text-align: center;
+            }
+
+            td.right {
+                width: 8%;
+                border: 3px solid black;
+                font-size: 3vh;
+                font-family: 'Courier New', Courier, monospace;
+                font-weight: bold;
+                text-align: center;
             }
 
         </style>
     </head>
 
-    <body style="background-color: whitesmoke;">
+    <body style="background-color: gray;">
         <img id="NoMoves" src="whatdo.jpg" hidden>
-        <select id="NewGameSelector"></select>
-        <button type="button" onclick="NewGame()">Start a new game!</button>
-        <p style="width: 50%; float: right;">Welcome to <strong>The Game!</strong> where you will play cards below into piles, also below. 
-            <br>The top two piles only go up, and the bottom piles only go down! 
-            <br>You can however make them go the wrong way but only by exactly ten at a time! That is, if the top pile has a 63, you can play any card 64 or higher, or 53. 
-            <br>Get as far as you can. you will unlock more difficult versions as you play which will make things harder at random!
-            <br>Your score will go up for playing more cards before you end your turn, as well as 5 points every time you reverse!
-            <br> So zany! GLHF!
-            <br>Coding by <a href="https://github.com/Pokesalot">Pokesalot</a>, art by <a href="https://www.twitch.tv/syntheticbears">SyntheticBears</a> :P</p>
-            
-        <table>
-            <tr>
-                <h3 id="difficultyHeader" style="display: inline;"></h3>
-                <h4 id="difficultyRollsHeader" style="display: inline;"></h4>
-            </tr>
-        </table>
-        
-        
-        
-        
-        <div id="DeckDiv">
-            <h2 id="CardsRemaining">Cards in deck: 90</h2>
-            <h2 id="playsLeftHeader">Cards to play: 2</h2>
-        </div>
-        <br><br>
-        
-        <h2 id="ScoreBar" style="float: right;width: 50%;">Score: 0</h2>
-        
-        <div id="TableDiv">
-            <table>
-                <tr>
-                    <td>_/\_</td>
-                    <td id="Pile0" onclick="TryPlay(0)"></td>
-                    <td id="Pile1" onclick="TryPlay(1)"></td>
-                    <td>_/\_</td>
-                </tr><tr>
-                    <td>_\/_</td>
-                    <td id="Pile2" onclick="TryPlay(2)"></td>
-                    <td id="Pile3" onclick="TryPlay(3)"></td>
-                    <td>_\/_</td>
-                </tr>
-            </table>
-            
-        </div>
-        
-        <br><br>
-        
-        <div id="HandDiv">
-            <table><tr id="HandRow"></tr></table>
-        </div>
-        <br>
-        <button style="height: 40px;" type="button" id="UndoButton" hidden onclick="UndoMove()">&ltUndo&gt</button>
-        <button style="height: 40px;" type="button" id="EndTurnButton" hidden onclick="EndTurn()">&ltEnd Turn&gt</button>
+        <div id="UnderCharlie" style="float: left;width: 100%; height: 100%;">
+            <div id="leftPanel" style="width: 33%; height: 100%; float: left;background-color: springgreen;">
+                <p>Welcome to <strong>The Game!</strong> where you will play cards below into piles, also below. 
+                    <br>The top two piles only go up, and the bottom piles only go down! 
+                    <br>You can however make them go the wrong way but only by exactly ten at a time! 
+                    <br>That is, if the top pile has a 63, you can play any card 64 or higher, or 53. 
+                    <br>Get as far as you can. you will unlock more difficult versions as you play which will make things harder at random!
+                    <br>Your score will go up for playing more cards before you end your turn, as well as 5 points every time you reverse!
+                    <br> So zany! GLHF!
+                    <br>Coding by <a href="https://github.com/Pokesalot">Pokesalot</a>, art by <a href="https://www.twitch.tv/syntheticbears">SyntheticBears</a> :P
+                </p>
 
-        <br><br>
-        <h2>Top Ten High Scores!</h2> 
-        <ul id="hiscores">
-            <li>Nothing here yet :)</li>
-        </ul>
+                <select id="NewGameSelector"></select>
+                <button type="button" onclick="NewGame()">Start a new game!</button>
+                <button type="button" onclick="NewGame();while(simulationsRun[0].cards < 98){NewGame()}">Start a new winnable game! (could take a while)</button>
+
+                <br><br>
+                <h2>Top Ten High Scores!</h2> 
+                <ul id="hiscores">
+                    <li>Nothing here yet :)</li>
+                </ul>
+            </div>
+
+            <div id="Middle Panel" style="width: 33%; float: left; padding-top: 20px;">
+                <table>
+                    <tr>
+                        <h3 id="difficultyHeader" style="display: inline;"></h3>
+                        <h4 id="difficultyRollsHeader" style="display: inline;"></h4>
+                    </tr>
+                </table>
+
+                <h2 id="CardsRemaining">Cards in deck: 90</h2>
+                <h2 id="playsLeftHeader">Cards to play: 2</h2>
+                <h2 id="ScoreBar">Score: 0</h2>
+                
+                <table id="Piles">
+                    <tr>
+                        <td class="middle">_/\_</td>
+                        <td class="middle" id="Pile0" onclick="TryPlay(0)"></td>
+                        <td class="middle" id="Pile1" onclick="TryPlay(1)"></td>
+                        <td class="middle">_/\_</td>
+                    </tr><tr>
+                        <td class="middle">_\/_</td>
+                        <td class="middle" id="Pile2" onclick="TryPlay(2)"></td>
+                        <td class="middle" id="Pile3" onclick="TryPlay(3)"></td>
+                        <td class="middle">_\/_</td>
+                    </tr>
+                </table>
+                <br><br>
+                
+                <table><tr id="HandRow"></tr></table>
+                <br>
+                <button style="height: 40px;" type="button" id="UndoButton" hidden onclick="UndoMove()">&ltUndo&gt</button>
+                <button style="height: 40px;" type="button" id="EndTurnButton" hidden onclick="EndTurn()">&ltEnd Turn&gt</button>
         
+                
+
+            </div>
+            <div id="RightPanel" style="float: right; width: 33%;height: 100%;">
+                <h2>Numbers played so far</h2>
+                <table id="BingoBoard" style="width: 100%;border-spacing: 10px;"></table>
+                <div id="SimulationDisplay" style="width: 100%; height: 40%; position: relative; border: 1px solid black">
+                    <p id="SimulationResults"></p>
+                    <div id="buttonsDiv" style="height: 20%; width: 100%; position: absolute; bottom: 0; left: 0; background-color: turquoise;">
+                        <h2>Run more simulations on this deck?</h2>
+                        <button type="button" onclick="SimulateCurrentGame();">1 more!</button>
+                        <button type="button" onclick="let i=5; while(i--){SimulateCurrentGame()};">5 more!</button>
+                        <button type="button" onclick="let i=10; while(i--){SimulateCurrentGame()};">10 more!</button>
+                        <button type="button" onclick="let i=25; while(i--){SimulateCurrentGame()};">25 more!</button>
+                    </div>
+                </div>
+            </div>
+        </div>
         <script src="TheGame.js"></script>
     </body>
 
