@@ -299,7 +299,6 @@ function UndoMove(){
 function SimulateCurrentGame(ratios=[-1]){
     for(let gameRatio=0;gameRatio<ratios.length;gameRatio++){
         let ratio = ratios[gameRatio] == -1? Math.random() : ratios[gameRatio]
-        console.log(`Simulating game with ratio of ${ratio}`);
         let curDeckID = deckID; let DeadGame=false;
         let simDeck=[];for(let i=0;i<masterDeck.length;i++){simDeck.push(masterDeck[i])};
         let simPiles = [];
