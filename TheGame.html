@@ -1,6 +1,7 @@
 <html>
     <head>
         <title>This is a Game!</title>
+        <script src="functions.js"></script>
         <style>
             td.middle {
                 width: 3.75vw;
@@ -42,8 +43,8 @@
 
                 <select id="NewGameSelector"></select>
                 <button type="button" onclick="NewGame()">Start a new game!</button>
-                <button type="button" onclick="NewGame([0]);while(simulationsRun[0].cards < 98){NewGame([0])};SimulateCurrentGame([-1,1]);">Start a new winnable game! (could take a while)</button>
-
+                <button type="button" onclick="let restarts=0;NewGame([0]);while(simulationsRun[0].cards < 98){NewGame([0]);restarts++};SimulateCurrentGame([-1,1]);alert(`Restarted ${restarts} times!`)">Start a new winnable game! (could take a while)</button>
+                <input type="text" id="SeedInput" style="width: 80%;"><button onclick="RandomState=Code2Seed($('SeedInput').value);NewGame()">Load Seed</button>
                 <br><br>
                 <h2>Top Ten High Scores!</h2> 
                 <ul id="hiscores">

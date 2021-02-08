@@ -19,12 +19,10 @@ let currentDifficulty = difficulties[0]
 let difshow = $("difficultyHeader")
 difshow.innerText = `Current difficulty: ${currentDifficulty}`
 //Create deck and shuffle it by adding cards to it randomly
-let deck = [2];//Skip adding 2 'randomly' since it will be the only card
-for(let i = 3; i <= 99; i++){
-    deck.splice(Math.floor(Math.random() * (deck.length + 1)),0,i);
-}
+$("SeedInput").value = Seed2Code();
+let gameSeedCode = Seed2Code();
+let deck = GetNewDeck();
 let masterDeck = [];for(let i=0;i<deck.length;i++){masterDeck.push(deck[i])}; let simulationsRun=[];
-let deckID = Math.random().toString().split(".")[1];
 //Create piles
 let piles = {};
 piles[0] = 1;
@@ -178,16 +176,15 @@ function TryPlay(pileNumber){
 }
 
 function NewGame(newRatios = [0,1,-1]){
-    hiscores.push(`${score},${cardsPlayed},${undos},${currentDifficulty}`);
+    hiscores.push(`${score},${cardsPlayed},${undos},${currentDifficulty},${gameSeedCode}`);
     hiscores.sort(function(a, b) {return b.split(',')[0] - a.split(',')[0];}).splice(maxHiscores,100);//Make sure we have exactly the top ten hiscores
     $("hiscores").innerHTML = ""
     for(let i=0;i<hiscores.length;i++){
-        $("hiscores").innerHTML += `<li>Score:${hiscores[i].split(',')[0]}, Cards: ${hiscores[i].split(',')[1]}, Undos: ${hiscores[i].split(',')[2]}, Level: ${hiscores[i].split(',')[3]}</li>`
+        $("hiscores").innerHTML += `<li>Score:${hiscores[i].split(',')[0]}, Cards: ${hiscores[i].split(',')[1]}, Undos: ${hiscores[i].split(',')[2]}, Level: ${hiscores[i].split(',')[3]}, Seed: ${hiscores[i].split(',')[4]}</li>`
     }
     currentDifficulty = difficulties[$("NewGameSelector").selectedIndex];
     $("difficultyHeader").innerText = `Current difficulty: ${currentDifficulty}`
     //Create deck and shuffle it by adding cards to it randomly
-    
     piles[0] = 1;
     piles[1] = 1;
     piles[2] = 100;
@@ -228,13 +225,10 @@ function NewGame(newRatios = [0,1,-1]){
         drh.innerText = `Changes this game: ${changes}`
     }
 
-    deck = [2];//Skip adding 2 'randomly' since it will be the only card
-    for(let i = 3; i <= 99; i++){
-        if(hand.indexOf(i) > -1){continue;}
-        deck.splice(Math.floor(Math.random() * deck.length + 1),0,i);
-    }
+    $("SeedInput").value = Seed2Code();
+    gameSeedCode = Seed2Code();
+    deck = GetNewDeck()
     masterDeck = [];for(let i=0;i<deck.length;i++){masterDeck.push(deck[i])}; simulationsRun=[];
-    deckID = Math.random().toString().split(".")[1];
     selected = 0;
     PlayedThisTurn = 0;
     lastPlay = {"Put":0,"Pile":0,"Last":0};
@@ -282,9 +276,18 @@ function CheckForDeadBoard(){
 
 function UndoMove(){
     if($("UndoButton").hidden){return}
-    score -= [1,1,2,4,6,8,10,12][PlayedThisTurn]
+    if((lastPlay.Pile < 2 && lastPlay.Last - lastPlay.Put == 10) || (lastPlay.Pile >1 && lastPlay.Last - lastPlay.Put == -10)){
+        score -= 5;
+    }
+    score -= [0,1,1,2,4,6,8,10,12][PlayedThisTurn]
     PlayedThisTurn--; cardsPlayed--;
-    alert(`Oopsy woopsy. Wooks wike someone had a wittle fucko boingo. A wittle fucky wucky. Twy to do bettew maybe? >.< \nRemoved ${undos} point${undos!=1?"s":""}`)
+    let plh = $("playsLeftHeader");
+    if(deck.length>0){
+        plh.innerText = `Cards to play: ${Math.max(MinPlaysWithDeck-PlayedThisTurn,0)}`
+    }else{
+        plh.innerText = `Cards to play: ${hand.length}`
+    }
+    alert(`Oopsy woopsy. Wooks wike someone had a wittle fucko boingo. A wittle fucky wucky. Twy to do bettew maybe? >.<`)
     hand.push(lastPlay["Put"]);
     hand.sort(function(a, b) {
         return a - b;
@@ -294,97 +297,20 @@ function UndoMove(){
     PopulatePiles();
     $("UndoButton").hidden = true;
     $("ScoreBar").innerText = `Score: ${score}`
-}
-
-function SimulateCurrentGame(ratios=[-1]){
-    for(let gameRatio=0;gameRatio<ratios.length;gameRatio++){
-        let ratio = ratios[gameRatio] == -1? Math.random() : ratios[gameRatio]
-        let curDeckID = deckID; let DeadGame=false;
-        let simDeck=[];for(let i=0;i<masterDeck.length;i++){simDeck.push(masterDeck[i])};
-        let simPiles = [];
-        let simHand = [];
-        let simScore = 0;let simCardsPlayed=0;
-        simPiles[0] = 1;simPiles[1]=1;simPiles[2]=100;simPiles[3]=100;
-
-        //TODO on stream, figure out how to play the game
-        while((simDeck.length > 0 || simHand.length > 0) && !DeadGame){
-            while(simHand.length<maxHandSize && simDeck.length > 0){simHand.push(simDeck.pop())} //fill hand
-            
-            let playsThisTurn=0;let costs = [];
-            for(let card=0;card<simHand.length;card++){
-                costs.push(GetCardCost(simPiles,simHand,simDeck,card));
-            }
-            costs.sort(function(a,b){return a.cost-b.cost});
-            
-            while((playsThisTurn<MinPlaysWithDeck || (costs[0].cost * (1-ratio)) < [1,1,2,4,6,8,10,12][playsThisTurn] * ratio) && costs[0].cost < 500){
-                simPiles[costs[0].pile] = simHand[costs[0].card]
-                simHand.splice(costs[0].card,1);
-
-                costs=[];
-                for(let card=0;card<simHand.length;card++){
-                    costs.push(GetCardCost(simPiles,simHand,simDeck,card));
-                }
-                costs.sort(function(a,b){return a.cost-b.cost});
-                simCardsPlayed++;simScore += [1,1,2,4,6,8,10,12][playsThisTurn];playsThisTurn++; 
-                if(simHand.length == 0){break;}
-                if(costs[0] > 500){DeadGame = true;break;}
-            }
-            if(costs.length>0){if(costs[0].cost > 500){DeadGame = true;break}}
-        }//Play cards on the deck while we have cards to play
-        
-        if(curDeckID == deckID){
-            simulationsRun.push({"ratio":ratio,"score":simScore,"cards":simCardsPlayed});
-            simulationsRun.sort(function(a,b){
-                return b.cardsPlayed - a.cardsPlayed
-            })
-            let summaryText = `Highest cards played: ${simulationsRun[0]["cards"]}, score of ${simulationsRun[0]["score"]}, ratio of ${simulationsRun[0]["ratio"]}<br>`;
-            simulationsRun.sort(function(a,b){return b.score-a.score});
-            summaryText += `Highest scoring game: ${simulationsRun[0]["score"]}, played ${simulationsRun[0]["cards"]} cards, ratio of ${simulationsRun[0]["ratio"]}
-            <br>Games played: ${simulationsRun.length}
-            <br>Ratios used: 0`;
-            simulationsRun.sort(function(a,b){return a.ratio-b.ratio});
-            let fix = 4;
-            if(simulationsRun.length >= 200){fix--}
-            if(simulationsRun.length >= 350){fix--}
-            if(simulationsRun.length >= 450){fix--}
-            for(let sim=1;sim<simulationsRun.length -1;sim++){
-                if( parseFloat(simulationsRun[sim].ratio).toFixed(fix) == parseFloat(simulationsRun[sim-1].ratio).toFixed(fix)){continue}//Remove duplicates
-                summaryText += `, ${parseFloat(simulationsRun[sim].ratio).toFixed(fix)}`;
-            }
-            $("SimulationResults").innerHTML = summaryText + ", 1";
-        }//else a change to the deck was made while we were simulating
-    }
-}
-
-function GetCardCost(piles,hand,deck,card){
-    let leastBad = {"cost":1000,"pile":0,"card":card};
-    for(let pile=0;pile<4;pile++){
-        if((hand[card]>piles[pile]&&hand[card]!=piles[pile]+10&&pile>1) || (hand[card]<piles[pile]&&hand[card]!=piles[pile]-10&&pile<2)){continue;}
-        //Any card that gets here can be played on this pile
-        let costSavings = 0; 
-        for(let check=Math.min(hand[card],piles[pile])+1;check<Math.max(hand[card],piles[pile]);check++){
-            if(hand.indexOf(check)==-1&&deck.indexOf(check)==-1){
-                costSavings++
-            }
-        }
-        if(hand.indexOf(hand[card] + 10)>-1 || hand.indexOf(hand[card]-10)>-1){
-            //If this card is part of a ten-off pair, cost will go up to play in the wrong direction
-            //and cost will go down to play in the better direction
-            if((hand.indexOf(hand[card] + 10)>-1 && pile > 1) || (hand.indexOf(hand[card] - 10)>-1 && pile < 2)){//it's the proper first play
-                Math.abs(hand[card]-piles[pile])-10-costSavings < leastBad.cost? leastBad = {"cost":Math.abs(hand[card]-piles[pile])-10-costSavings,"pile":pile,"card":card} : leastBad=leastBad;
-            }else{//it's the higher card
-                leastBad = {"cost":Math.abs(hand[card]-piles[pile])+10-costSavings,"pile":pile,"card":card}
-            }
+    let endturn = $("EndTurnButton")
+    endturn.hidden = true;
+    if(hand.length == 0 && deck.length == 0){
+        if(currentDifficulty == difficulties.length){
+            difficulties.push(difficulties.length + 1);
+            alert("You won! You have also unlocked a harder difficulty to try your skills!");
+            PopulateDifficulties();
         }else{
-            if((pile<2 && hand[card] + 10 == piles[pile]) || (pile>1 && hand[card] -10 == piles[pile])){//wrong way cards
-                leastBad = {"cost":-10-costSavings,"pile":pile,"card":card};
-            }else{//normal card costs
-                if(Math.abs(hand[card]-piles[pile])-costSavings < leastBad.cost){
-                    leastBad = {"cost":Math.abs(hand[card]-piles[pile])-costSavings,"pile":pile,"card":card};
-                }
-            }
-            
+            alert("You won! Try a harder one next time :^)");
         }
+
+    }else if((hand.length == 0 || PlayedThisTurn >= MinPlaysWithDeck) && deck.length > 0){
+        endturn.hidden = false;
     }
-    return leastBad;
 }
+
+
