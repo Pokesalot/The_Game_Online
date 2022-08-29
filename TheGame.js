@@ -19,10 +19,8 @@ let currentDifficulty = difficulties[0]
 let difshow = $("difficultyHeader")
 difshow.innerText = `Current difficulty: ${currentDifficulty}`
 //Create deck and shuffle it by adding cards to it randomly
-$("SeedInput").value = Seed2Code();
-let gameSeedCode = Seed2Code();
 let deck = GetNewDeck();
-let masterDeck = [];for(let i=0;i<deck.length;i++){masterDeck.push(deck[i])}; let simulationsRun=[];
+let simulationsRun=[];
 //Create piles
 let piles = {};
 piles[0] = 1;
@@ -46,6 +44,7 @@ PopulateHand();
 PopulateDifficulties();
 PopulateBingo();
 SimulateCurrentGame([0,1,-1]);
+$("TimeInput").value=RandomSeed
 
 
 function PopulateHand(){
@@ -89,6 +88,7 @@ function PopulateDifficulties(){
         options += `<option>Level ${i + 1}</option>`;
     }
     $("NewGameSelector").innerHTML = options;
+    $("NewGameSelector").selectedIndex = currentDifficulty-1
 }
 
 function PopulateBingo(){
@@ -129,6 +129,7 @@ function TryPlay(pileNumber){
             score += [1,1,2,4,6,8,10,12][PlayedThisTurn]
             PlayedThisTurn++; cardsPlayed++;
             $("UndoButton").hidden = false;
+            $("RestartGameButton").hidden = false;
         }else{
             alert("do you are have stupid");
         }
@@ -175,15 +176,22 @@ function TryPlay(pileNumber){
     CheckForDeadBoard();
 }
 
+
 function NewGame(newRatios = [0,1,-1]){
-    hiscores.push(`${score},${cardsPlayed},${undos},${currentDifficulty},${gameSeedCode}`);
-    hiscores.sort(function(a, b) {return b.split(',')[0] - a.split(',')[0];}).splice(maxHiscores,100);//Make sure we have exactly the top ten hiscores
-    $("hiscores").innerHTML = ""
-    for(let i=0;i<hiscores.length;i++){
-        $("hiscores").innerHTML += `<li>Score:${hiscores[i].split(',')[0]}, Cards: ${hiscores[i].split(',')[1]}, Undos: ${hiscores[i].split(',')[2]}, Level: ${hiscores[i].split(',')[3]}, Seed: ${hiscores[i].split(',')[4]}</li>`
+    if(score>0){
+        hiscores.push(`${score},${cardsPlayed},${undos},${currentDifficulty},${RandomSeed},${CurrentGame}`);
+        hiscores.sort(function(a, b) {return b.split(',')[0] - a.split(',')[0];}).splice(maxHiscores,100);//Make sure we have exactly the top ten hiscores
+        $("hiscores").innerHTML = ""
+        for(let i=0;i<hiscores.length;i++){
+            $("hiscores").innerHTML += `<li>Score:${hiscores[i].split(',')[0]}, Cards: ${hiscores[i].split(',')[1]}, Undos: ${hiscores[i].split(',')[2]}, Level: ${hiscores[i].split(',')[3]}, Time: ${hiscores[i].split(',')[4]}, Seed: ${hiscores[i].split(',')[5]}</li>`
+        }
     }
+    
+    $("SeedInput").value=CurrentGame
     currentDifficulty = difficulties[$("NewGameSelector").selectedIndex];
     $("difficultyHeader").innerText = `Current difficulty: ${currentDifficulty}`
+
+
     //Create deck and shuffle it by adding cards to it randomly
     piles[0] = 1;
     piles[1] = 1;
@@ -199,15 +207,15 @@ function NewGame(newRatios = [0,1,-1]){
     let changes = "|";
     difficultyChanges = currentDifficulty - 1
     while(difficultyChanges > 0){
-        changeRoll = Math.random()
+        changeRoll = randNorm(500+difficultyChanges+CurrentGame)
         if(      changeRoll < 0.2){
-            piles[0] += Math.ceil(Math.random() * 5);
+            piles[0] += Math.ceil(randNorm(600+difficultyChanges+CurrentGame) * 5);
         }else if(changeRoll < 0.4){
-            piles[1] += Math.ceil(Math.random() * 5);
+            piles[1] += Math.ceil(randNorm(600+difficultyChanges+CurrentGame) * 5);
         }else if(changeRoll < 0.6){
-            piles[2] -= Math.ceil(Math.random() * 5);
+            piles[2] -= Math.ceil(randNorm(600+difficultyChanges+CurrentGame) * 5);
         }else if(changeRoll < 0.8){
-            piles[3] -= Math.ceil(Math.random() * 5);
+            piles[3] -= Math.ceil(randNorm(600+difficultyChanges+CurrentGame) * 5);
         }else if(changeRoll < 0.85){
             if(maxHandSize == minHandSize){continue}
             maxHandSize--;
@@ -225,10 +233,9 @@ function NewGame(newRatios = [0,1,-1]){
         drh.innerText = `Changes this game: ${changes}`
     }
 
-    $("SeedInput").value = Seed2Code();
-    gameSeedCode = Seed2Code();
+    
     deck = GetNewDeck()
-    masterDeck = [];for(let i=0;i<deck.length;i++){masterDeck.push(deck[i])}; simulationsRun=[];
+    simulationsRun=[];
     selected = 0;
     PlayedThisTurn = 0;
     lastPlay = {"Put":0,"Pile":0,"Last":0};
@@ -244,6 +251,12 @@ function NewGame(newRatios = [0,1,-1]){
     PopulateHand();
     PopulateBingo();
     SimulateCurrentGame(newRatios);
+}
+
+function RestartGame(){
+    NewGame();
+    $("RestartGameButton").hidden = true;
+    $("UndoButton").hidden = true;
 }
 
 function EndTurn(){
@@ -270,6 +283,7 @@ function CheckForDeadBoard(){
             let charlie = $("NoMoves");
             charlie.hidden=false;
             setTimeout(() => {  alert("Your game has no more moves, let's start a new one!");NewGame() }, 500);
+            CurrentGame++;
         }
     }
 }
@@ -314,3 +328,9 @@ function UndoMove(){
 }
 
 
+function testHardMode(){
+    for(let dif=0;dif<50;dif++){
+        difficulties.push(difficulties.length + 1);
+    }
+    PopulateDifficulties();
+}

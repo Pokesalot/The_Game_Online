@@ -1,60 +1,89 @@
-let RandomState = Math.floor(Math.random() * 100000) + 1//Guarantees that our state is at least 1
+const d = new Date();
+let RandomSeed = d.getTime();
+let Game_Scale = 198691317;
+let CurrentGame = 1;
+deckMin=2 //2 for a normal game
+deckMax=99 //99 for a normal game
 
-function randNorm(pocketNumber = 100000){
-    if(RandomState == 0){
-        alert("Something went wrong, and the random has been turned off. Fixing now!")
-        RandomState = Math.floor(Math.random() * pocketNumber)
-    }
-    RandomState ^= RandomState >> 12; // a
-	RandomState ^= RandomState << 25; // b
-    RandomState ^= RandomState >> 27; // c
-    return (RandomState % pocketNumber) / pocketNumber
+
+function randNorm(state, seed = RandomSeed,maxSize = 0xFFFFFFFF){//Caluclate on a 32 bit basis
+    let noise1 = 0xB5297A4D;
+    let noise2 = 0x68E31DA4;
+    let noise3 = 0x1B56C4E9;
+    let mangled = state;
+
+    mangled *= noise1;
+    mangled = mangled % maxSize; //This is added between each step to ensure overflow occurs, without being actually limited to 32bit js
+    mangled += seed;
+    mangled = mangled % maxSize;
+    mangled ^= (mangled >>> 8);
+    mangled = mangled % maxSize;
+    mangled += noise2;
+    mangled = mangled % maxSize;
+    mangled ^= (mangled << 8);
+    mangled = mangled % maxSize;
+    mangled *= noise3;
+    mangled = mangled % maxSize;
+    mangled ^= (mangled >>> 8);
+    mangled = mangled % maxSize; 
+    return (mangled/maxSize)+0.5; //The math leaves us with (-0.5,0.5) instead of [0,1) so we add 0.5 to get close
 }
 
-function randRange(start=0,width=100){
-    //Returns an int from [start,end)
-    norm = randNorm()
-    return Math.floor(norm * width) + start
-}
-
-function Seed2Code(width = 40){
-    let startstring = `${RandomState},`
-    let AddedLetters = 0;
-    while(btoa(startstring + "i_littleluna_i on twitch.tv!".substring(0,AddedLetters)).length < width){
-        AddedLetters++;
-    }
-    return btoa(startstring + "i_littleluna_i on twitch.tv!".substring(0,AddedLetters+2))
-}
-
-function Code2Seed(code){
-    try {
-        let instr = atob(code)
-        return (parseInt(instr.split(",")[0]))
-    } catch (error) {
-        alert("Invalid seed code given! Setting seed to a random number")
-        RandomState = randRange(10000,249000)
-    }
-    
-}
 
 function GetNewDeck(hand=[]){
-    let deck = [2];//Skip adding 2 'randomly' since it will be the only card
-    for(let i = 3; i <= 99; i++){
-        if(hand.indexOf(i) > -1){continue;}
-        deck.splice(Math.floor(randNorm() * (deck.length + 1)),0,i);
+    let deck = [];
+    for(let i = deckMin; i <= deckMax; i++){
+        deck.push({
+            num: i,
+            rand: randNorm(state=(i+CurrentGame*Game_Scale))
+        })
     }
-    return deck
+    deck.sort((a,b) => a.rand - b.rand);
+    return deck.map(a=>a.num)
 }
 
 function SimulateCurrentGame(ratios=[-1]){
     for(let gameRatio=0;gameRatio<ratios.length;gameRatio++){
         let ratio = ratios[gameRatio] == -1? Math.random() : ratios[gameRatio]
         let DeadGame=false;
-        let simDeck=[];for(let i=0;i<masterDeck.length;i++){simDeck.push(masterDeck[i])};
+        let simDeck=GetNewDeck();
         let simPiles = [];
         let simHand = [];
         let simScore = 0;let simCardsPlayed=0;
         simPiles[0] = 1;simPiles[1]=1;simPiles[2]=100;simPiles[3]=100;
+
+        //-------------------------
+        //Create deck and shuffle it by adding cards to it randomly
+        //Create hand
+        maxSimHandSize = 8;
+        minSimPlaysWithDeck = 2;
+        
+        simDifficultyChanges = currentDifficulty - 1
+        while(simDifficultyChanges > 0){
+            changeRoll = randNorm(500+simDifficultyChanges+CurrentGame)
+            if(      changeRoll < 0.2){
+                simPiles[0] += Math.ceil(randNorm(600+simDifficultyChanges+CurrentGame) * 5);
+            }else if(changeRoll < 0.4){
+                simPiles[1] += Math.ceil(randNorm(600+simDifficultyChanges+CurrentGame) * 5);
+            }else if(changeRoll < 0.6){
+                simPiles[2] -= Math.ceil(randNorm(600+simDifficultyChanges+CurrentGame) * 5);
+            }else if(changeRoll < 0.8){
+                simPiles[3] -= Math.ceil(randNorm(600+simDifficultyChanges+CurrentGame) * 5);
+            }else if(changeRoll < 0.85){
+                if(maxSimHandSize == minHandSize){continue}
+                maxSimHandSize--;
+            }else if(changeRoll < 0.9){
+                if(simHand.length == 0){
+                    simHand = [52]
+                }else{
+                    simHand.push(simHand[simHand.length-1] - 1)
+                }
+            }else{
+                minSimPlaysWithDeck++;
+            }
+            simDifficultyChanges--;
+        }
+        //-------------------------
 
         //TODO on stream, figure out how to play the game
         while((simDeck.length > 0 || simHand.length > 0) && !DeadGame){

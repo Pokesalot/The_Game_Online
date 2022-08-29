@@ -42,10 +42,13 @@
                 </p>
 
                 <select id="NewGameSelector"></select>
-                <button type="button" onclick="NewGame()">Start a new game!</button>
-                <button type="button" onclick="let restarts=0;NewGame([0]);while(simulationsRun[0].cards < 98){NewGame([0]);restarts++};SimulateCurrentGame([-1,1]);alert(`Restarted ${restarts} times!`)">Start a new winnable game! (could take a while)</button>
-                <input type="text" id="SeedInput" style="width: 80%;"><button onclick="RandomState=Code2Seed($('SeedInput').value);NewGame()">Load Seed</button>
+                <button type="button" onclick="CurrentGame++;NewGame();">Start a new game!</button>
+                <button type="button" onclick="let restarts=1;CurrentGame++;NewGame();while(simulationsRun[0].cards < deckMax-deckMin+1 && restarts < 500){CurrentGame++;NewGame();restarts++};SimulateCurrentGame([-1,1]);if(restarts==500){alert(`Restarted ${restarts} times and did not find a winnable game!`)}else{alert(`Restarted ${restarts} times!`)}">Start a new winnable game! (could take a while)</button>
+                <br>
+                <input type="text" id="TimeInput" style="width: 15%;">Time <br>
+                <input type="text" id="SeedInput" style="width: 15%;" value="1">Seed <br><button onclick="if($('SeedInput').value != CurrentGame){CurrentGame=$('SeedInput').value;NewGame()}else{$('RestartGameButton').click()}">Load Seed</button>
                 <br><br>
+                <button type="button" onclick="testHardMode()" hidden>HardMode</button>
                 <h2>Top Ten High Scores!</h2> 
                 <ul id="hiscores">
                     <li>Nothing here yet :)</li>
@@ -55,7 +58,7 @@
             <div id="Middle Panel" style="width: 33%; float: left; padding-top: 20px;">
                 <table>
                     <tr>
-                        <h3 id="difficultyHeader" style="display: inline;"></h3>
+                        <h3 id="difficultyHeader" style="display: inline;"></h3><br>
                         <h4 id="difficultyRollsHeader" style="display: inline;"></h4>
                     </tr>
                 </table>
@@ -83,6 +86,7 @@
                 <br>
                 <button style="height: 40px;" type="button" id="UndoButton" hidden onclick="UndoMove()">&ltUndo&gt</button>
                 <button style="height: 40px;" type="button" id="EndTurnButton" hidden onclick="EndTurn()">&ltEnd Turn&gt</button>
+                <button style="height: 40px;" type="button" id="RestartGameButton" hidden onclick="RestartGame()">&ltRestart Game&gt</button>
         
                 
 
@@ -96,8 +100,8 @@
                         <h2>Run more simulations on this deck?</h2>
                         <button type="button" onclick="SimulateCurrentGame();">1 more!</button>
                         <button type="button" onclick="let i=5; while(i--){SimulateCurrentGame()};">5 more!</button>
-                        <button type="button" onclick="let i=10; while(i--){SimulateCurrentGame()};">10 more!</button>
-                        <button type="button" onclick="let i=25; while(i--){SimulateCurrentGame()};">25 more!</button>
+                        <button type="button" onclick="let j=10; while(j--){SimulateCurrentGame()};">10 more!</button>
+                        <button type="button" onclick="let k=25; while(k--){SimulateCurrentGame()};">25 more!</button>
                     </div>
                 </div>
             </div>
